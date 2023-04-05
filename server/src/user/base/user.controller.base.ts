@@ -27,9 +27,9 @@ import { UserWhereUniqueInput } from "./UserWhereUniqueInput";
 import { UserFindManyArgs } from "./UserFindManyArgs";
 import { UserUpdateInput } from "./UserUpdateInput";
 import { User } from "./User";
-import { ProjectFindManyArgs } from "../../project/base/ProjectFindManyArgs";
-import { Project } from "../../project/base/Project";
-import { ProjectWhereUniqueInput } from "../../project/base/ProjectWhereUniqueInput";
+import { OrderFindManyArgs } from "../../order/base/OrderFindManyArgs";
+import { Order } from "../../order/base/Order";
+import { OrderWhereUniqueInput } from "../../order/base/OrderWhereUniqueInput";
 
 @swagger.ApiBearerAuth()
 @common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
@@ -205,33 +205,31 @@ export class UserControllerBase {
   }
 
   @common.UseInterceptors(AclFilterResponseInterceptor)
-  @common.Get("/:id/projects")
-  @ApiNestedQuery(ProjectFindManyArgs)
+  @common.Get("/:id/orders")
+  @ApiNestedQuery(OrderFindManyArgs)
   @nestAccessControl.UseRoles({
-    resource: "Project",
+    resource: "Order",
     action: "read",
     possession: "any",
   })
-  async findManyProjects(
+  async findManyOrders(
     @common.Req() request: Request,
     @common.Param() params: UserWhereUniqueInput
-  ): Promise<Project[]> {
-    const query = plainToClass(ProjectFindManyArgs, request.query);
-    const results = await this.service.findProjects(params.id, {
+  ): Promise<Order[]> {
+    const query = plainToClass(OrderFindManyArgs, request.query);
+    const results = await this.service.findOrders(params.id, {
       ...query,
       select: {
         createdAt: true,
-        description: true,
-        id: true,
-        name: true,
 
-        owner: {
+        createdUser: {
           select: {
             id: true,
           },
         },
 
-        startDate: true,
+        id: true,
+        orderNumber: true,
         updatedAt: true,
       },
     });
@@ -243,18 +241,18 @@ export class UserControllerBase {
     return results;
   }
 
-  @common.Post("/:id/projects")
+  @common.Post("/:id/orders")
   @nestAccessControl.UseRoles({
     resource: "User",
     action: "update",
     possession: "any",
   })
-  async connectProjects(
+  async connectOrders(
     @common.Param() params: UserWhereUniqueInput,
-    @common.Body() body: ProjectWhereUniqueInput[]
+    @common.Body() body: OrderWhereUniqueInput[]
   ): Promise<void> {
     const data = {
-      projects: {
+      orders: {
         connect: body,
       },
     };
@@ -265,18 +263,18 @@ export class UserControllerBase {
     });
   }
 
-  @common.Patch("/:id/projects")
+  @common.Patch("/:id/orders")
   @nestAccessControl.UseRoles({
     resource: "User",
     action: "update",
     possession: "any",
   })
-  async updateProjects(
+  async updateOrders(
     @common.Param() params: UserWhereUniqueInput,
-    @common.Body() body: ProjectWhereUniqueInput[]
+    @common.Body() body: OrderWhereUniqueInput[]
   ): Promise<void> {
     const data = {
-      projects: {
+      orders: {
         set: body,
       },
     };
@@ -287,18 +285,18 @@ export class UserControllerBase {
     });
   }
 
-  @common.Delete("/:id/projects")
+  @common.Delete("/:id/orders")
   @nestAccessControl.UseRoles({
     resource: "User",
     action: "update",
     possession: "any",
   })
-  async disconnectProjects(
+  async disconnectOrders(
     @common.Param() params: UserWhereUniqueInput,
-    @common.Body() body: ProjectWhereUniqueInput[]
+    @common.Body() body: OrderWhereUniqueInput[]
   ): Promise<void> {
     const data = {
-      projects: {
+      orders: {
         disconnect: body,
       },
     };
